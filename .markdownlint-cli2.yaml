@@ -1,0 +1,21 @@
+# markdownlint-cli2 config for slack-cli.
+# Mainly relaxes rules that fight against Japanese line widths and
+# legitimate inline HTML / bare URLs in README content.
+
+config:
+  line-length: false
+  no-inline-html: false
+  no-bare-urls: false
+  first-line-h1: false
+  no-duplicate-heading: false
+  no-emphasis-as-heading: false
+  # Tables with mixed-width (CJK + ASCII) characters cannot be aligned by
+  # column at the byte/code-point level. Keep tables readable by content,
+  # not by pipe alignment.
+  table-column-style: false
+
+ignores:
+  - 'CHANGELOG.md'
+  - 'target/**'
+  # Internal brainstorming spec + implementation plan, kept as-is.
+  - 'docs/superpowers/**'
