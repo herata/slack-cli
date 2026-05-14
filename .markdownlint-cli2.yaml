@@ -9,6 +9,10 @@ config:
   first-line-h1: false
   no-duplicate-heading: false
   no-emphasis-as-heading: false
+  # Tables with mixed-width (CJK + ASCII) characters cannot be aligned by
+  # column at the byte/code-point level. Keep tables readable by content,
+  # not by pipe alignment.
+  table-column-style: false
 
 ignores:
   - 'CHANGELOG.md'
