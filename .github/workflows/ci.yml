@@ -32,26 +32,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ensure rustfmt + clippy components
-        # `mise.toml` requests rust profile=default, but mise's rust backend
-        # may install a cached minimal toolchain. Add the components
-        # explicitly so `cargo fmt` and `cargo clippy` always resolve.
-        run: rustup component add rustfmt clippy
+        # `mise.toml` requests rust profile=default, but mise may surface
+        # a cached minimal toolchain. Add the components inside the mise
+        # toolchain (not the host's rustup default, which would diverge).
+        run: mise exec -- rustup component add rustfmt clippy
       - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest
       - name: fmt check
         if: matrix.os == 'ubuntu-latest'
-        run: cargo fmt --all -- --check
+        run: mise exec -- cargo fmt --all -- --check
       - name: clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: mise exec -- cargo clippy --all-targets -- -D warnings
       - name: nextest
-        run: cargo nextest run --all-targets
+        run: mise exec -- cargo nextest run --all-targets
       - name: docs
         if: matrix.os == 'ubuntu-latest'
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --document-private-items
+        run: mise exec -- cargo doc --no-deps --document-private-items
 
   deny:
     name: cargo-deny
