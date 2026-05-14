@@ -13,3 +13,5 @@ config:
 ignores:
   - 'CHANGELOG.md'
   - 'target/**'
+  # Internal brainstorming spec + implementation plan, kept as-is.
+  - 'docs/superpowers/**'

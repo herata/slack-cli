@@ -48,18 +48,18 @@ repos:
         stages: [commit-msg]
         args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
 
-  # ----- Rust (local hooks; require cargo on PATH) -----
+  # ----- Rust (local hooks via mise so the toolchain is always pinned) -----
   - repo: local
     hooks:
       - id: cargo-fmt
         name: cargo fmt --check
-        entry: cargo fmt --all -- --check
+        entry: mise exec -- cargo fmt --all -- --check
         language: system
         types: [rust]
         pass_filenames: false
       - id: cargo-clippy
         name: cargo clippy --all-targets -- -D warnings
-        entry: cargo clippy --all-targets -- -D warnings
+        entry: mise exec -- cargo clippy --all-targets -- -D warnings
         language: system
         types: [rust]
         pass_filenames: false
