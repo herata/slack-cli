@@ -1,0 +1,51 @@
+# mise toolchain pin for slack-cli.
+# Single source of truth: do NOT add rust-toolchain.toml.
+#
+# Dev tools use the `ubi` backend (pre-built binaries from GitHub releases),
+# so their own MSRV does not constrain ours. cargo-nextest is installed
+# separately in CI via `taiki-e/install-action` because its release asset
+# naming (cargo-nextest-X.Y.Z) does not match the ubi default filter.
+
+[tools]
+# `profile = "default"` ships rustfmt + clippy alongside rustc; the
+# mise default minimal profile omits them and `cargo fmt --check` /
+# `cargo clippy` fail on a fresh CI runner.
+rust = { version = "1.89", profile = "default" }
+"ubi:mitsuhiko/insta"          = { version = "latest", exe = "cargo-insta" }
+"ubi:EmbarkStudios/cargo-deny" = "latest"
+"ubi:orhun/git-cliff"          = "latest"
+
+[env]
+RUST_BACKTRACE = "1"
+
+[tasks.build]
+description = "Release build"
+run = "cargo build --release"
+
+[tasks.test]
+description = "Run fmt check + clippy + nextest + deny in one shot"
+run = [
+  "cargo fmt --all -- --check",
+  "cargo clippy --all-targets -- -D warnings",
+  "cargo nextest run",
+  "cargo deny check advisories bans licenses sources",
+]
+
+[tasks.fix]
+description = "Auto-apply fmt and clippy fixes"
+run = [
+  "cargo fmt --all",
+  "cargo clippy --all-targets --fix --allow-dirty --allow-staged",
+]
+
+[tasks.snap]
+description = "Review pending insta snapshots"
+run = "cargo insta review"
+
+[tasks.run]
+description = "Run debug build of the CLI"
+run = "cargo run --"
+
+[tasks.changelog]
+description = "Regenerate CHANGELOG.md from conventional commits"
+run = "git cliff --output CHANGELOG.md"
