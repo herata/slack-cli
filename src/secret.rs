@@ -129,6 +129,9 @@ mod tests {
     use super::*;
     use crate::config::{TokenSource, WorkspaceConfig, WorkspaceMeta};
 
+    // Only the file-backend test currently consumes this; gate it the same
+    // way to avoid an unused-helper lint on Windows builds.
+    #[cfg(not(target_os = "windows"))]
     fn ws(src: TokenSource) -> WorkspaceConfig {
         WorkspaceConfig {
             team_id: None,
