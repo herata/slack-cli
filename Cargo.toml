@@ -1,0 +1,60 @@
+[package]
+name = "slack-cli"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+license = "MIT OR Apache-2.0"
+description = "Slack CLI for coding agents (jira-cli style)"
+repository = "https://github.com/<owner>/slack-cli"
+default-run = "slack-cli"
+
+[[bin]]
+name = "slack-cli"
+path = "src/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+opt-level = "z"
+panic = "abort"
+
+[dependencies]
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+regex = "1"
+tabled = "0.16"
+clap = { version = "4", features = ["derive", "wrap_help", "env"] }
+etcetera = "0.8"
+toml_edit = { version = "0.22", features = ["serde"] }
+tempfile = "3"
+secrecy = "0.10"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap_complete = "4"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-webpki-roots", "multipart", "stream"] }
+tokio = { version = "1", features = ["macros", "rt", "fs", "io-util", "signal"] }
+uuid = { version = "1", features = ["v4"] }
+urlencoding = "2"
+rpassword = "7"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", features = ["apple-native"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+keyring = { version = "3", features = ["sync-secret-service"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
+
+[dev-dependencies]
+wiremock = "0.6"
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "test-util"] }
+assert_cmd = "2"
+predicates = "3"
+insta = { version = "1", features = ["json", "yaml", "filters"] }
+pretty_assertions = "1"

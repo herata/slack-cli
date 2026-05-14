@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # v2.1.11
+        with:
+          install: true
+          cache: true
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      - name: fmt check
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo fmt --all -- --check
+      - name: clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: nextest
+        run: cargo nextest run --all-targets
+      - name: docs
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --document-private-items
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # v2.1.11
+        with:
+          install: true
+          cache: true
+      - run: cargo deny check advisories bans licenses sources
+
+  msrv:
+    name: msrv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install build deps for keyring (libdbus on linux)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
+      - uses: dtolnay/rust-toolchain@b3b07ba8b418998c39fb20f53e8b695cdcc8de1b # stable
+        with:
+          toolchain: "1.89"
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
+      - run: cargo check --all-features
+
+  linux-headless:
+    name: linux headless (no D-Bus)
+    runs-on: ubuntu-latest
+    container:
+      image: rust:1.89-slim
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install build deps
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends pkg-config build-essential ca-certificates libdbus-1-dev
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
+      - run: cargo test --tests
