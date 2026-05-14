@@ -25,33 +25,30 @@ jobs:
       - name: install libdbus on linux
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libdbus-1-dev pkg-config
-      - uses: jdx/mise-action@5083fe46898c414b2475087cc79da59e7da859e8 # v2.1.11
+      # No mise here: the test matrix only needs rust + cargo-nextest. Letting
+      # rustup own the toolchain avoids the mise/host-rustup divergence we hit
+      # on macOS (mise's cargo and rustup component add ended up on different
+      # toolchains and clippy wouldn't resolve).
+      - uses: dtolnay/rust-toolchain@b3b07ba8b418998c39fb20f53e8b695cdcc8de1b # stable
         with:
-          install: true
-          cache: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: ensure rustfmt + clippy components
-        # `mise.toml` requests rust profile=default, but mise may surface
-        # a cached minimal toolchain. Add the components inside the mise
-        # toolchain (not the host's rustup default, which would diverge).
-        run: mise exec -- rustup component add rustfmt clippy
+          toolchain: "1.89"
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest
       - name: fmt check
         if: matrix.os == 'ubuntu-latest'
-        run: mise exec -- cargo fmt --all -- --check
+        run: cargo fmt --all -- --check
       - name: clippy
-        run: mise exec -- cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
       - name: nextest
-        run: mise exec -- cargo nextest run --all-targets
+        run: cargo nextest run --all-targets
       - name: docs
         if: matrix.os == 'ubuntu-latest'
         env:
           RUSTDOCFLAGS: -D warnings
-        run: mise exec -- cargo doc --no-deps --document-private-items
+        run: cargo doc --no-deps --document-private-items
 
   deny:
     name: cargo-deny
@@ -93,7 +90,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ensure rustfmt + clippy components
-        run: rustup component add rustfmt clippy
+        # Route through mise so components land in the same toolchain the
+        # pre-commit cargo hooks (`mise exec -- cargo ...`) will use.
+        run: mise exec -- rustup component add rustfmt clippy
       - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.7.4
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
 
