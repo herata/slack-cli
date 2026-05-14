@@ -127,6 +127,9 @@ fn keyring_delete(workspace_name: &str) -> Result<(), CliError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    // Only the file-backend test consumes these; on Windows the test (and
+    // the `ws()` helper below) is gated out, so the import would be unused.
+    #[cfg(not(target_os = "windows"))]
     use crate::config::{TokenSource, WorkspaceConfig, WorkspaceMeta};
 
     // Only the file-backend test currently consumes this; gate it the same
