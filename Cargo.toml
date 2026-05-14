@@ -30,7 +30,7 @@ regex = "1"
 tabled = "0.16"
 clap = { version = "4", features = ["derive", "wrap_help", "env"] }
 etcetera = "0.8"
-toml_edit = { version = "0.22", features = ["serde"] }
+toml_edit = { version = "0.25", features = ["serde"] }
 tempfile = "3"
 secrecy = "0.10"
 tracing = "0.1"
