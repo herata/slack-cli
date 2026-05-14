@@ -1,0 +1,15 @@
+# markdownlint-cli2 config for slack-cli.
+# Mainly relaxes rules that fight against Japanese line widths and
+# legitimate inline HTML / bare URLs in README content.
+
+config:
+  line-length: false
+  no-inline-html: false
+  no-bare-urls: false
+  first-line-h1: false
+  no-duplicate-heading: false
+  no-emphasis-as-heading: false
+
+ignores:
+  - 'CHANGELOG.md'
+  - 'target/**'

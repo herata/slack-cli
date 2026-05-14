@@ -1,0 +1,65 @@
+# pre-commit hooks for slack-cli.
+#
+# Install (one-time, per clone):
+#   pip install --user pre-commit   # or: brew install pre-commit, pipx install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type commit-msg
+#
+# Run manually on every tracked file:
+#   pre-commit run --all-files
+
+repos:
+  # ----- File hygiene -----
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.snap$'
+      - id: end-of-file-fixer
+        exclude: '\.snap$'
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
+
+  # ----- Secret detection -----
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  # ----- Markdown lint -----
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.14.0
+    hooks:
+      - id: markdownlint-cli2
+        args: ['--config', '.markdownlint-cli2.yaml']
+
+  # ----- Conventional Commits (commit-msg only) -----
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
+
+  # ----- Rust (local hooks; require cargo on PATH) -----
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt --check
+        entry: cargo fmt --all -- --check
+        language: system
+        types: [rust]
+        pass_filenames: false
+      - id: cargo-clippy
+        name: cargo clippy --all-targets -- -D warnings
+        entry: cargo clippy --all-targets -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false

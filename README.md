@@ -153,6 +153,28 @@ mise run snap        # Review pending insta snapshots
 mise run run -- channel list
 ```
 
+### pre-commit hooks
+
+One-time setup per clone (installs `pre-commit` to your PATH and wires up
+`.git/hooks`):
+
+```sh
+pip install --user pre-commit   # or: brew install pre-commit / pipx install pre-commit
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+Run all hooks against every tracked file:
+
+```sh
+pre-commit run --all-files
+```
+
+Configured in `.pre-commit-config.yaml`: file hygiene, gitleaks (secret
+scan), markdownlint, Conventional Commits validator (commit-msg), plus
+`cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` as
+local hooks. The CI workflow runs the same set on every PR.
+
 ## License
 
 Dual-licensed under MIT OR Apache-2.0.

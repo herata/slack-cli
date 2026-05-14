@@ -149,6 +149,27 @@ mise run snap        # 未確定の insta スナップショットをレビュ�
 mise run run -- channel list
 ```
 
+### pre-commit hooks
+
+クローン直後に一度だけ設定（`pre-commit` を PATH に入れて `.git/hooks` に登録します）:
+
+```sh
+pip install --user pre-commit   # または brew install pre-commit / pipx install pre-commit
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+全 tracked file に対して手動実行:
+
+```sh
+pre-commit run --all-files
+```
+
+`.pre-commit-config.yaml` で次を設定: ファイル衛生チェック、gitleaks
+（secret scan）、markdownlint、Conventional Commits validator（commit-msg）、
+ローカル hook として `cargo fmt --check` と `cargo clippy --all-targets -- -D warnings`。
+CI でも同じ hook 群を各 PR で実行します。
+
 ## ライセンス
 
 MIT OR Apache-2.0 のデュアルライセンス。
